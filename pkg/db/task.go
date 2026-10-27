@@ -5,7 +5,6 @@ import (
 	"fmt"
 )
 
-
 type Task struct {
 	ID      string `json:"id"`
 	Date    string `json:"date"`
@@ -13,7 +12,6 @@ type Task struct {
 	Comment string `json:"comment"`
 	Repeat  string `json:"repeat"`
 }
-
 
 func AddTask(task *Task) (int64, error) {
 	if task == nil {
@@ -41,7 +39,6 @@ func AddTask(task *Task) (int64, error) {
 	return id, nil
 }
 
-
 func GetTask(id string) (*Task, error) {
 	if id == "" {
 		return nil, fmt.Errorf("task id is required")
@@ -63,7 +60,6 @@ func GetTask(id string) (*Task, error) {
 	}
 	return task, nil
 }
-
 
 func UpdateTask(task *Task) error {
 	if task == nil {
@@ -98,10 +94,54 @@ func UpdateTask(task *Task) error {
 }
 
 
+func UpdateDate(date, id string) error {
+	if id == "" {
+		return fmt.Errorf("task id is required")
+	}
+	if database == nil {
+		return fmt.Errorf("database is not initialized")
+	}
+
+	result, err := database.Exec(`UPDATE scheduler SET date = ? WHERE id = ?`, date, id)
+	if err != nil {
+		return fmt.Errorf("update task date: %w", err)
+	}
+	count, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("check updated task date: %w", err)
+	}
+	if count == 0 {
+		return fmt.Errorf("task not found")
+	}
+	return nil
+}
+
+
+func DeleteTask(id string) error {
+	if id == "" {
+		return fmt.Errorf("task id is required")
+	}
+	if database == nil {
+		return fmt.Errorf("database is not initialized")
+	}
+
+	result, err := database.Exec(`DELETE FROM scheduler WHERE id = ?`, id)
+	if err != nil {
+		return fmt.Errorf("delete task: %w", err)
+	}
+	count, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("check deleted task: %w", err)
+	}
+	if count == 0 {
+		return fmt.Errorf("task not found")
+	}
+	return nil
+}
+
 func Tasks(limit int) ([]*Task, error) {
 	return queryTasks(`SELECT id, date, title, comment, repeat FROM scheduler ORDER BY date, id LIMIT ?`, limit)
 }
-
 
 func TasksByText(limit int, search string) ([]*Task, error) {
 	pattern := "%" + search + "%"
@@ -112,7 +152,6 @@ func TasksByText(limit int, search string) ([]*Task, error) {
 		limit,
 	)
 }
-
 
 func TasksByDate(limit int, date string) ([]*Task, error) {
 	return queryTasks(

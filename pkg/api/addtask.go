@@ -19,9 +19,19 @@ func taskHandler(w http.ResponseWriter, r *http.Request) {
 		addTaskHandler(w, r)
 	case http.MethodPut:
 		updateTaskHandler(w, r)
+	case http.MethodDelete:
+		deleteTaskHandler(w, r)
 	default:
 		writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
 	}
+}
+
+func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
+	if err := db.DeleteTask(r.URL.Query().Get("id")); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{})
 }
 
 func getTaskHandler(w http.ResponseWriter, r *http.Request) {
