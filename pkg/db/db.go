@@ -21,7 +21,7 @@ CREATE INDEX scheduler_date_idx ON scheduler (date);
 
 var database *sql.DB
 
-// Init opens dbFile and creates the scheduler table and date index when needed.
+
 func Init(dbFile string) error {
 	if dbFile == "" {
 		return fmt.Errorf("database file must not be empty")
