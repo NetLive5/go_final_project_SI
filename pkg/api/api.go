@@ -4,7 +4,8 @@ import "net/http"
 
 func Init(mux *http.ServeMux) {
 	mux.HandleFunc("/api/nextdate", nextDateHandler)
-	mux.HandleFunc("/api/task", taskHandler)
-	mux.HandleFunc("/api/task/done", doneHandler)
-	mux.HandleFunc("/api/tasks", tasksHandler)
+	mux.Handle("/api/signin", http.HandlerFunc(signinHandler))
+	mux.Handle("/api/task", auth(http.HandlerFunc(taskHandler)))
+	mux.Handle("/api/task/done", auth(http.HandlerFunc(doneHandler)))
+	mux.Handle("/api/tasks", auth(http.HandlerFunc(tasksHandler)))
 }
