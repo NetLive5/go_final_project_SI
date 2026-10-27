@@ -10,7 +10,6 @@ import (
 
 const dateFormat = "20060102"
 
-
 func NextDate(now time.Time, dstart, repeat string) (string, error) {
 	start, err := time.Parse(dateFormat, dstart)
 	if err != nil {

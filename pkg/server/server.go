@@ -7,7 +7,6 @@ import (
 	"go_final_project/pkg/api"
 )
 
-
 func Run(port, webDir string) error {
 	if port == "" {
 		return fmt.Errorf("port must not be empty")
