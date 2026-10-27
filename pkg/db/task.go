@@ -1,10 +1,11 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 )
 
-// Task contains the fields stored in the scheduler table.
+
 type Task struct {
 	ID      string `json:"id"`
 	Date    string `json:"date"`
@@ -13,7 +14,7 @@ type Task struct {
 	Repeat  string `json:"repeat"`
 }
 
-// AddTask inserts a task and returns its database identifier.
+
 func AddTask(task *Task) (int64, error) {
 	if task == nil {
 		return 0, fmt.Errorf("task must not be nil")
@@ -40,12 +41,68 @@ func AddTask(task *Task) (int64, error) {
 	return id, nil
 }
 
-// Tasks returns up to limit tasks ordered by their date.
+
+func GetTask(id string) (*Task, error) {
+	if id == "" {
+		return nil, fmt.Errorf("task id is required")
+	}
+	if database == nil {
+		return nil, fmt.Errorf("database is not initialized")
+	}
+
+	task := new(Task)
+	err := database.QueryRow(
+		`SELECT id, date, title, comment, repeat FROM scheduler WHERE id = ?`,
+		id,
+	).Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("task not found")
+		}
+		return nil, fmt.Errorf("get task: %w", err)
+	}
+	return task, nil
+}
+
+
+func UpdateTask(task *Task) error {
+	if task == nil {
+		return fmt.Errorf("task must not be nil")
+	}
+	if task.ID == "" {
+		return fmt.Errorf("task id is required")
+	}
+	if database == nil {
+		return fmt.Errorf("database is not initialized")
+	}
+
+	result, err := database.Exec(
+		`UPDATE scheduler SET date = ?, title = ?, comment = ?, repeat = ? WHERE id = ?`,
+		task.Date,
+		task.Title,
+		task.Comment,
+		task.Repeat,
+		task.ID,
+	)
+	if err != nil {
+		return fmt.Errorf("update task: %w", err)
+	}
+	count, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("check updated task: %w", err)
+	}
+	if count == 0 {
+		return fmt.Errorf("task not found")
+	}
+	return nil
+}
+
+
 func Tasks(limit int) ([]*Task, error) {
 	return queryTasks(`SELECT id, date, title, comment, repeat FROM scheduler ORDER BY date, id LIMIT ?`, limit)
 }
 
-// TasksByText searches task titles and comments for a substring.
+
 func TasksByText(limit int, search string) ([]*Task, error) {
 	pattern := "%" + search + "%"
 	return queryTasks(
@@ -56,7 +113,7 @@ func TasksByText(limit int, search string) ([]*Task, error) {
 	)
 }
 
-// TasksByDate returns tasks scheduled on date in YYYYMMDD format.
+
 func TasksByDate(limit int, date string) ([]*Task, error) {
 	return queryTasks(
 		`SELECT id, date, title, comment, repeat FROM scheduler WHERE date = ? ORDER BY date, id LIMIT ?`,
