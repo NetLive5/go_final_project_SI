@@ -2,12 +2,11 @@ package config
 
 import "os"
 
-
 type Config struct {
-	Port   string
-	DBFile string
+	Port     string
+	DBFile   string
+	Password string
 }
-
 
 func Init() Config {
 	port := os.Getenv("TODO_PORT")
@@ -21,7 +20,8 @@ func Init() Config {
 	}
 
 	return Config{
-		Port:   port,
-		DBFile: dbFile,
+		Port:     port,
+		DBFile:   dbFile,
+		Password: os.Getenv("TODO_PASSWORD"),
 	}
 }

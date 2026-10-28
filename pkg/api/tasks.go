@@ -16,24 +16,27 @@ type tasksResponse struct {
 
 func tasksHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "метод не поддерживается"})
 		return
 	}
 
 	search := r.URL.Query().Get("search")
+	searchDate, parseErr := time.Parse("02.01.2006", search)
+	isDateSearch := parseErr == nil && searchDate.Format("02.01.2006") == search
 	var (
 		tasks []*db.Task
 		err   error
 	)
-	if search == "" {
+	switch {
+	case search == "":
 		tasks, err = db.Tasks(tasksLimit)
-	} else if date, parseErr := time.Parse("02.01.2006", search); parseErr == nil && date.Format("02.01.2006") == search {
-		tasks, err = db.TasksByDate(tasksLimit, date.Format(dateFormat))
-	} else {
+	case isDateSearch:
+		tasks, err = db.TasksByDate(tasksLimit, searchDate.Format(dateFormat))
+	default:
 		tasks, err = db.TasksByText(tasksLimit, search)
 	}
 	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": fmt.Sprintf("load tasks: %v", err)})
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": fmt.Sprintf("не удалось загрузить задачи: %v", err)})
 		return
 	}
 

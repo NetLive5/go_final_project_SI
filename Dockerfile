@@ -18,6 +18,5 @@ COPY --from=build --chown=1000:1000 /out/data /data
 ENV TODO_PORT=7540
 ENV TODO_DBFILE=/data/scheduler.db
 
-EXPOSE 7540
 USER 1000:1000
 ENTRYPOINT ["/app/scheduler"]

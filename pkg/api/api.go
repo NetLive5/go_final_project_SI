@@ -2,10 +2,10 @@ package api
 
 import "net/http"
 
-func Init(mux *http.ServeMux) {
+func Init(mux *http.ServeMux, password string) {
 	mux.HandleFunc("/api/nextdate", nextDateHandler)
-	mux.Handle("/api/signin", http.HandlerFunc(signinHandler))
-	mux.Handle("/api/task", auth(http.HandlerFunc(taskHandler)))
-	mux.Handle("/api/task/done", auth(http.HandlerFunc(doneHandler)))
-	mux.Handle("/api/tasks", auth(http.HandlerFunc(tasksHandler)))
+	mux.Handle("/api/signin", signinHandler(password))
+	mux.Handle("/api/task", auth(password, http.HandlerFunc(taskHandler)))
+	mux.Handle("/api/task/done", auth(password, http.HandlerFunc(doneHandler)))
+	mux.Handle("/api/tasks", auth(password, http.HandlerFunc(tasksHandler)))
 }
