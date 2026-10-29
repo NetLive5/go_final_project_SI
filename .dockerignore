@@ -1,0 +1,7 @@
+.git
+.env
+.env.*
+data/
+tests/
+web/**/.DS_Store
+scheduler.db
